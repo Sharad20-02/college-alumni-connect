@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "Alumni Job Connect API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Employed Alumni Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"employed1@college.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Unemployed Alumni Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"unemployed1@college.com\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Post Job (Employed Alumni)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer <EMPLOYED_JWT>" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"Software Engineer\",\n  \"company\": \"Infosys\",\n  \"salary\": 850000,\n  \"location\": \"Bangalore\",\n  \"workingHours\": \"9AM-6PM\",\n  \"workingDays\": \"Mon-Fri\",\n  \"requiredSkills\": \"Java,SpringBoot\",\n  \"applicationUrl\": \"https://example.com/apply\"\n}"
+        },
+        "url": { "raw": "http://localhost:8080/jobs/post", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["jobs", "post"] }
+      }
+    },
+    {
+      "name": "Browse Jobs (Unemployed Alumni)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <UNEMPLOYED_JWT>" }
+        ],
+        "url": { "raw": "http://localhost:8080/jobs/browse", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["jobs", "browse"] }
+      }
+    },
+    {
+      "name": "Interested in Job",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <UNEMPLOYED_JWT>" }
+        ],
+        "url": { "raw": "http://localhost:8080/jobs/jobs/1/interested", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["jobs", "jobs", "1", "interested"] }
+      }
+    },
+    {
+      "name": "Browse Candidates (Employed Alumni)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <EMPLOYED_JWT>" }
+        ],
+        "url": { "raw": "http://localhost:8080/jobs/candidates", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["jobs", "candidates"] }
+      }
+    },
+    {
+      "name": "Notify Candidate (Employed Alumni)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer <EMPLOYED_JWT>" }
+        ],
+        "url": { "raw": "http://localhost:8080/jobs/candidates/2/notify", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["jobs", "candidates", "2", "notify"] }
+      }
+    }
+  ]
+}

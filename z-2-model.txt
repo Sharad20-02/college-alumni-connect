@@ -1,0 +1,187 @@
+Great, thanks for laying this out so clearly 👌. Since you’re focusing on the **Alumni part** for now, let’s refine your proposed **data model design** before jumping into code. I’ll suggest a structure that balances simplicity, normalization, and future scalability.
+
+---
+
+## 🏗 Alumni Data Model Design
+
+### 1. **Alumni (Abstract Base)**
+
+* Represents common fields for **all alumni**.
+* Holds identity, registration, verification, and status info.
+* We should avoid inheritance via separate tables for `EmployedAlumni` and `UnEmployedAlumni` — instead, a **single `Alumni` entity with a discriminator (employmentStatus)** is better. Inheritance in JPA can complicate queries and relationships.
+
+```java
+@Entity
+@Table(name = "alumni")
+public class Alumni {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String fullName;
+    private String email;
+    private String password; // hashed
+    private String secretKey; // for verification at signup
+    private Boolean verified = false;
+
+    @Enumerated(EnumType.STRING)
+    private EmploymentStatus employmentStatus; 
+    // EMPLOYED / UNEMPLOYED
+
+    @ManyToOne
+    private College college;
+
+    @OneToOne(mappedBy = "alumni", cascade = CascadeType.ALL)
+    private SkillSet skillSet;
+
+    @OneToOne(mappedBy = "alumni", cascade = CascadeType.ALL)
+    private Job currentJob;  // only for EMPLOYED
+
+    // timestamps: createdAt, updatedAt
+}
+```
+
+---
+
+### 2. **SkillSet**
+
+* Holds career-related metadata.
+* One-to-one with alumni (unemployed alumni will rely heavily on this).
+
+```java
+@Entity
+@Table(name = "skill_set")
+public class SkillSet {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String skills;          // comma-separated or normalized to Skill table
+    private String certifications;  // list or JSON string
+    private String projects;
+    private String publications;
+    private Double gpa;
+    private Integer experienceYears;
+
+    private Integer score; // auto-calculated in constructor/service
+                          // based on GPA, skills, certifications, exp
+
+    @OneToOne
+    @JoinColumn(name = "alumni_id")
+    private Alumni alumni;
+}
+```
+
+---
+
+### 3. **Job (Current Employment of Alumni)**
+
+* One-to-one with employed alumni.
+
+```java
+@Entity
+@Table(name = "job")
+public class Job {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String role;
+    private String company;
+    private Double salary;
+    private String location;
+    private String workingHours; 
+    private String workingDays;
+
+    @OneToOne
+    @JoinColumn(name = "alumni_id")
+    private Alumni alumni;
+}
+```
+
+---
+
+### 4. **NewJob (Job Opportunities)**
+
+* Jobs posted by **college** or **employed alumni**.
+* Linked back to the poster type.
+
+```java
+@Entity
+@Table(name = "new_job")
+public class NewJob {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String role;
+    private String company;
+    private Double salary;
+    private String workingHours;
+    private String workingDays;
+    private String requiredSkills;
+
+    @Enumerated(EnumType.STRING)
+    private PosterType postedByType; // COLLEGE / ALUMNI
+
+    private String contactEmail;
+    private String applicationUrl;
+
+    @ManyToOne
+    private Alumni postedByAlumni; // null if posted by college
+
+    @ManyToOne
+    private College postedByCollege; // null if posted by alumni
+}
+```
+
+---
+
+### 5. **College & PlacementOfficer**
+
+(Handled by your teammate, but linking here for clarity.)
+
+```java
+@Entity
+@Table(name = "college")
+public class College {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String address;
+    private String contactMail;
+
+    @OneToOne(mappedBy = "college", cascade = CascadeType.ALL)
+    private PlacementOfficer placementOfficer;
+}
+```
+
+```java
+@Entity
+@Table(name = "placement_officer")
+public class PlacementOfficer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String username;
+    private String password; // hashed
+
+    @OneToOne
+    @JoinColumn(name = "college_id")
+    private College college;
+}
+```
+
+---
+
+## 🔑 Why This Design?
+
+1. **Avoids inheritance pitfalls** — all alumni are in one table, differentiated by `employmentStatus`.
+2. **Extensible** — you can later add relationships (alumni → referrals, alumni → applications).
+3. **Skill evaluation logic** can live in a `SkillService` that computes the `score` automatically when a `SkillSet` is created/updated.
+4. **NewJob flexibility** — works for both alumni and college posters.
+
+---

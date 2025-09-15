@@ -1,0 +1,187 @@
+Perfect 👍 since we’re trimming out **certifications** and **publications**, the `SkillSet` becomes cleaner.
+Now, let’s design **DTOs** for the alumni flow.
+
+---
+
+## 🎯 DTO Design
+
+DTOs will separate **API layer** from **entity layer** (no direct entity exposure).
+We’ll need them for:
+
+1. **Alumni Registration / Verification**
+2. **Alumni Profile Completion** (employed vs unemployed branch)
+3. **SkillSet details**
+4. **Job Posting (by Alumni)**
+5. **Job Viewing (response DTOs)**
+
+---
+
+### 1. **Alumni Registration**
+
+Triggered when alumni receives email + secret key.
+
+```java
+public class AlumniRegistrationRequest {
+    private String email;      // must match invitation email
+    private String password;   // raw (hashed inside service)
+    private String secretKey;  // verification
+    private String fullName;
+}
+```
+
+**Response:**
+
+```java
+public class AlumniRegistrationResponse {
+    private Long alumniId;
+    private String fullName;
+    private String email;
+    private boolean verified;
+}
+```
+
+---
+
+### 2. **Alumni Login**
+
+(basic auth scenario, might also use JWT later)
+
+```java
+public class AlumniLoginRequest {
+    private String email;
+    private String password;
+}
+```
+
+```java
+public class AlumniLoginResponse {
+    private Long alumniId;
+    private String token;     // JWT or session token
+    private String fullName;
+    private EmploymentStatus employmentStatus;
+}
+```
+
+---
+
+### 3. **Profile Completion (Branching)**
+
+Alumni must complete details after login.
+
+#### a) **Base Profile**
+
+```java
+public class AlumniProfileBaseRequest {
+    private Long alumniId;
+    private String phoneNumber;
+    private String address;
+    private EmploymentStatus employmentStatus;  // EMPLOYED / UNEMPLOYED
+}
+```
+
+#### b) **Employed Profile Extension**
+
+```java
+public class EmployedProfileRequest {
+    private Long alumniId;
+    private String company;
+    private String role;
+    private Double salary;
+    private String location;
+    private String workingHours;
+    private String workingDays;
+}
+```
+
+#### c) **Unemployed Profile Extension**
+
+```java
+public class UnemployedProfileRequest {
+    private Long alumniId;
+    private SkillSetRequest skillSet; 
+}
+```
+
+---
+
+### 4. **SkillSet DTO**
+
+(used only for unemployed alumni or updates)
+
+```java
+public class SkillSetRequest {
+    private String skills;    // comma-separated (e.g., "Java,Spring,SQL")
+    private Integer experienceYears;
+    private Double gpa;
+}
+```
+
+```java
+public class SkillSetResponse {
+    private Long id;
+    private String skills;
+    private Integer experienceYears;
+    private Double gpa;
+    private Integer score;  // calculated in backend
+}
+```
+
+---
+
+### 5. **Job Posting (by Alumni)**
+
+Slightly different from College jobs since it’s referral-based.
+
+```java
+public class AlumniJobPostRequest {
+    private Long alumniId;   // who is posting
+    private String role;
+    private String company;
+    private Double salary;
+    private String location;
+    private String workingHours;
+    private String workingDays;
+    private String requiredSkills;
+    private String applicationUrl;  // optional
+}
+```
+
+```java
+public class AlumniJobPostResponse {
+    private Long jobId;
+    private String role;
+    private String company;
+    private String contactEmail; // referrer’s email auto-filled
+}
+```
+
+---
+
+### 6. **Job Browsing (Response DTOs)**
+
+For unemployed alumni browsing jobs.
+
+```java
+public class JobListingResponse {
+    private Long jobId;
+    private String role;
+    private String company;
+    private Double salary;
+    private String location;
+    private String requiredSkills;
+    private PosterType postedByType; // COLLEGE / ALUMNI
+    private String contactEmail;
+}
+```
+
+---
+
+✅ With this set of DTOs, we have:
+
+* A clean registration → verification → profile completion flow.
+* Split DTOs for **employed vs unemployed** profiles.
+* Support for alumni job postings & job browsing.
+
+---
+
+Do you want me to now **map these DTOs to entities** (using `ModelMapper` or manual converters), or should we first draft the **controller/service endpoints** where these DTOs will be used?

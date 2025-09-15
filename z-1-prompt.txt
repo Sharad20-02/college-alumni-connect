@@ -1,0 +1,125 @@
+PROBLEM STATEMENT:
+3. Alumni Job Connect for Colleges with Low Tech 
+Capacity 
+Problem: Government and small private colleges want to stay connected with recent 
+alumni (0–2 years out) to support them in finding jobs, but lack: 
+● Discover & enable easy onboarding of alumni 
+● Digital tools or platforms for alumni/job matching 
+● Systems for verifying alumni skills, background, or employment readiness 
+● Staff/time to manage ongoing alumni engagement 
+As a result, thousands of graduates miss local job opportunities and colleges lose 
+visibility into alumni success. 
+Challenge: How might we design an easy-to-adopt Alumni Job Connect solution 
+that enables any college, even with minimal tech staff, to: 
+● Instantly discover & register recent verified alumni (via app, web, or 
+WhatsApp-from anywhere) 
+● Facilitate job matching between alumni and local employers/college partners, 
+with automatic skill and credential checks 
+● Promote alumni referring other alumni in existing companies 
+● Manage alumni communication and job tracking with zero manual effort 
+
+OUR SOLUTION:
+My job in the team is to build a Java-Springboot backend.
+
+We will build the application with two types of user-roles:
+1. College
+2. Alumni  (this has two types: employed and unemployed)
+
+COLLEGE:
+The placement officer of the college can signup and login into the application and
+represent their college.
+Once logged in, they can upload alumni data in two ways:
+1. Bulk upload through by uploading an excel sheet.
+2. single upload through form filling of alumni data.
+
+Then they will have an button, which upon clicking must send an email to
+all the alumni's - asking them them to register.
+
+Then all these alumni's data can be dumped into the database, with their status set to
+pending, meaning they still havent registered.
+
+They will also be able to view statictics of alumni.
+
+They will be able to post job opportunities on the portal.
+
+ALUMNI:
+upon receiving the email, they should register with the mailid to which the invitation 
+was sent. in the email we provide a secrek key, which will already be stored in db.
+while registering they need to provide the secret key, and then they can be verified and their 
+pending state can change.
+upon login, they need to complete their profile.
+the first half of the form is basic details filling: also some of 
+the data can be autofilled by fetching from DB.
+one autofilled field will be : are you currently working? yes or no.
+(the college laready knows the placement information)
+later part of form depends upon what they choose for above question:
+if already employed, then ask for company and role details etc.
+else ask for skills, certifications, projects, internship experience etc.
+
+ALUMNI EMPLOYED:
+can post job opportunities (slightly different from job posted by college. will have
+the referrer's email and a button, upon clicking of which an email is sent to referrer
+that the candidate is interested in the role, and would like to communicate further)
+
+can browse candidates through filters
+
+if the employed finds any worthy candidate, then they can view emial of candidate or
+upon click of a button, an email will be sent to candidate that a referral is available
+and whether they are intrested.
+
+they must receive notification on the platform for most eligible candidates whomatches job criteria.
+
+ALUMNI UNEMPLOYED:
+can browse job opprtunities through filters.
+
+can send referrer jobs an email.
+can apply for college posted job opportunities.
+
+receive daily notification on the platform for jobs that match their skills.
+(skills that match for the jobs posted in the last 24 hours, notification 
+is sent at fixed time everyday)
+
+browse their college alumni who are already employed.
+
+NOTE:
+the jobs that a unemployed candidate views should only be those jobs that are
+posted by their college or the jobs posted by the employed alumni of theyr college.
+
+I will be downloading a starter project from start.spring.io.
+Maven, Java, Springboot:3.5.5, Packaging:JAR, Java version: 24
+Project Metadata
+Group: com.infy.app
+Artifact: app
+Name: app
+Description: College-Alumni Connect
+Package name: com.infy.app
+
+use H2-in memory-database for now.
+
+lets start with model and dto. before providing the code,
+lets discuss how you would design the data models.
+for now i am only concerned with alumni part functionality. college part is
+handled by my teammate.
+
+heres my propsed data models:
+
+abstract class: Alumni
+EmployedALumni inherits Alumni
+UnEmployedAlumni inherits Alumni
+
+Alumni has one SkillSet
+SkillSet is an entity: skills, certifications, publications, experience, gpa,
+score(between 0-100 assigned based on all factors in skillSet)
+higher the score better the candidate(will need a logic to assing this score in construtor
+as score will not be passed or will be passed as 0)
+
+EmployedAlumni has one job
+job is an entity too: salary, role, company, location, working hours, working days etc
+
+There is college entity: clgid, name, address, contactMail, placementOfficer
+
+There is a placementOfficer: id, username, password, etc
+
+placementOfficer and EmployedALumni can post NewJobs
+NewJobs is an entity: role, company, salary, working hours, working days, req-skills, 
+postedByType(college or EmployedAlumni), contanct mail, application url(if pressent)
